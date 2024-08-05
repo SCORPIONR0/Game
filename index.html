@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple 2D Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const player = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            width: 50,
+            height: 50,
+            color: 'blue',
+            speed: 5,
+            ammo: 10,
+            direction: 0 // 0: right, 1: up, 2: left, 3: down
+        };
+
+        let bullets = [];
+        const maps = [
+            { color: 'gray', width: canvas.width, height: canvas.height }
+        ];
+
+        let currentMapIndex = 0;
+
+        function drawPlayer() {
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+        }
+
+        function drawBullets() {
+            ctx.fillStyle = 'red';
+            bullets.forEach(bullet => {
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+            });
+        }
+
+        function drawMap() {
+            const map = maps[currentMapIndex];
+            ctx.fillStyle = map.color;
+            ctx.fillRect(0, 0, map.width, map.height);
+        }
+
+        function movePlayer() {
+            if (player.direction === 0) player.x += player.speed; // right
+            if (player.direction === 1) player.y -= player.speed; // up
+            if (player.direction === 2) player.x -= player.speed; // left
+            if (player.direction === 3) player.y += player.speed; // down
+        }
+
+        function shootBullet() {
+            if (player.ammo > 0) {
+                player.ammo--;
+                const bullet = {
+                    x: player.x + player.width / 2,
+                    y: player.y + player.height / 2,
+                    width: 10,
+                    height: 5,
+                    speed: 10,
+                    direction: player.direction
+                };
+                bullets.push(bullet);
+            }
+        }
+
+        function updateBullets() {
+            bullets.forEach(bullet => {
+                if (bullet.direction === 0) bullet.x += bullet.speed; // right
+                if (bullet.direction === 1) bullet.y -= bullet.speed; // up
+                if (bullet.direction === 2) bullet.x -= bullet.speed; // left
+                if (bullet.direction === 3) bullet.y += bullet.speed; // down
+            });
+            bullets = bullets.filter(bullet => bullet.x > 0 && bullet.x < canvas.width && bullet.y > 0 && bullet.y < canvas.height);
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawMap();
+            movePlayer();
+            drawPlayer();
+            updateBullets();
+            drawBullets();
+            requestAnimationFrame(gameLoop);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'ArrowRight') player.direction = 0;
+            if (e.code === 'ArrowUp') player.direction = 1;
+            if (e.code === 'ArrowLeft') player.direction = 2;
+            if (e.code === 'ArrowDown') player.direction = 3;
+            if (e.code === 'Space') shootBullet();
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.code === 'ArrowRight' && player.direction === 0) player.direction = -1;
+            if (e.code === 'ArrowUp' && player.direction === 1) player.direction = -1;
+            if (e.code === 'ArrowLeft' && player.direction === 2) player.direction = -1;
+            if (e.code === 'ArrowDown' && player.direction === 3) player.direction = -1;
+        });
+
+        gameLoop();
+    </script>
+</body>
+</html>
